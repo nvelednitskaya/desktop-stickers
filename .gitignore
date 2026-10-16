@@ -1,0 +1,10 @@
+# Build output: Stickers.exe is published on the Releases page instead
+Stickers.exe
+*.pdb
+
+# Personal data: notes, backups, logs, extracted fonts
+data/
+
+# Leftovers
+*.tmp
+restore-notes.json
