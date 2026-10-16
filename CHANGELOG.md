@@ -13,5 +13,6 @@ First public release.
 - Close without deleting, plus a trash you can restore from.
 - Collapse a sticker to its title.
 - 4 default colors, 10 pastels and custom colors.
+- English and Russian interface. It follows the Windows language, and you can switch it in the tray menu.
 - Autosave, plus autostart through Task Scheduler.
 - Embedded Onest font. Uses TT Fors instead when it is installed.

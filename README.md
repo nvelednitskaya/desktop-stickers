@@ -5,7 +5,7 @@ It is a single ~480 KB `.exe` with nothing to install.
 
 ![Desktop Stickers: checklists, Eisenhower matrix, privacy blur, color palette and the "⋯" menu](docs/screenshot.png)
 
-> **Interface language:** the app UI is in Russian. This README gives English translations of every button and menu item.
+> **Interface language:** English or Russian. The app follows the Windows display language, and you can switch it in the tray menu (*Язык / Language*).
 
 ## Features
 
@@ -20,6 +20,7 @@ It is a single ~480 KB `.exe` with nothing to install.
 - **Close without deleting.** Closed stickers can be reopened from the tray menu. Deleted stickers go to a trash you can restore from.
 - **Collapse** a sticker to just its title.
 - **Colors:** 4 default colors, 10 pastels and any custom color.
+- **English and Russian interface.**
 - **Starts with Windows** and restores every sticker where you left it. Everything is saved automatically.
 - **Native and light.** Built on WPF and .NET Framework 4.8, which ships with Windows 10 and 11. No runtime, installer or Electron.
 
@@ -70,17 +71,18 @@ The buttons appear when you hover over a sticker.
 
 Left-click the tray icon to bring all stickers to the front. Right-click it for the menu:
 
-| Russian label | Meaning |
+| Menu item | What it does |
 | --- | --- |
-| Новый стикер | New sticker |
-| Матрица Эйзенхауэра (4 стикера) | Eisenhower matrix (4 stickers) |
-| Brain dump (12 стикеров) | Brain dump (12 stickers) |
-| Показать все стикеры | Show all stickers |
-| Закрытые стикеры | Closed stickers (reopen one or all) |
-| Корзина | Trash (restore deleted stickers, empty trash) |
-| Запускать вместе с Windows | Start with Windows (on by default) |
-| Открыть папку с данными | Open the data folder |
-| Выход | Exit |
+| New sticker | Creates a sticker in the middle of the screen |
+| Eisenhower matrix (4 stickers) | Creates the 2×2 matrix template |
+| Brain dump (12 stickers) | Creates the 12-sticker brain-dump template |
+| Show all stickers | Brings every open sticker to the front |
+| Closed stickers | Reopens one closed sticker or all of them |
+| Trash | Restores a deleted sticker or empties the trash |
+| Start with Windows | Turns autostart on or off (on by default) |
+| Open data folder | Opens the folder with `notes.json` |
+| Язык / Language | Same as Windows, Русский or English |
+| Exit | Saves and quits |
 
 ## Data, autostart and uninstalling
 
@@ -113,6 +115,7 @@ The language level is C# 5, because that is what the built-in `csc.exe` supports
 | `--data <folder>` | Use another data folder. Autostart is left untouched. |
 | `--selftest --data <folder>` | Run the checklist and persistence self-test. Results go to `<folder>\log.txt`. |
 | `--snapshot <file.png> --data <folder>` | Render sample stickers to a PNG without showing windows. This is how `docs/screenshot.png` is made. |
+| `--lang en` / `--lang ru` | Force the interface language for this run. |
 | `--exit` | Ask the running instance to save and quit. |
 
 ### Project structure
@@ -123,6 +126,7 @@ src/
   StickerWindow.cs  one sticker window: toolbar, checklist, blur, drag and resize
   Theme.cs          palette, font loading, XAML styles, color and "⋯" popups, snapping
   Model.cs          notes model and JSON storage
+  Strings.cs        English / Russian interface switch
   SelfTest.cs       --selftest
 fonts/              Onest font (SIL OFL 1.1), embedded into the exe
 assets/             app icon
