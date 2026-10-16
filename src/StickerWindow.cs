@@ -73,7 +73,7 @@ namespace Stickers
             this.app = app;
             Note = note;
 
-            Title = "Стикер";
+            Title = L.T("Стикер", "Sticker");
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = Brushes.Transparent;
@@ -163,10 +163,10 @@ namespace Stickers
             bar.Children.Add(status);
 
             tools = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Opacity = 0 };
-            addBtn = Theme.MakeIconButton(Theme.IcAdd, "Новый стикер рядом  (Ctrl+N)", inkSoft);
-            colorBtn = Theme.MakeIconButton(Theme.IcColor, "Цвет", inkSoft);
-            moreBtn = Theme.MakeIconButton(Theme.IcMore, "Ещё", inkSoft);
-            closeBtn = Theme.MakeIconButton(Theme.IcClose, "Закрыть (не удаляет) — вернуть можно из значка в трее  (Ctrl+W)", inkSoft, 11);
+            addBtn = Theme.MakeIconButton(Theme.IcAdd, L.T("Новый стикер рядом  (Ctrl+N)", "New sticker next to this one  (Ctrl+N)"), inkSoft);
+            colorBtn = Theme.MakeIconButton(Theme.IcColor, L.T("Цвет", "Color"), inkSoft);
+            moreBtn = Theme.MakeIconButton(Theme.IcMore, L.T("Ещё", "More"), inkSoft);
+            closeBtn = Theme.MakeIconButton(Theme.IcClose, L.T("Закрыть (не удаляет) — вернуть можно из значка в трее  (Ctrl+W)", "Close (not deleted): reopen it from the tray icon  (Ctrl+W)"), inkSoft, 11);
             addBtn.Click += (s, e) => app.NewNote(this);
             colorBtn.Click += (s, e) => ShowColors();
             moreBtn.Click += (s, e) => ShowMenu();
@@ -180,7 +180,7 @@ namespace Stickers
             var titleGrid = new Grid();
             titleHint = new TextBlock
             {
-                Text = "Название", FontSize = 17, FontWeight = FontWeights.SemiBold, Foreground = inkHint,
+                Text = L.T("Название", "Title"), FontSize = 17, FontWeight = FontWeights.SemiBold, Foreground = inkHint,
                 Margin = new Thickness(2, 0, 0, 0), IsHitTestVisible = false
             };
             titleBox = new TextBox
@@ -232,7 +232,7 @@ namespace Stickers
             addRow = new Border { Padding = new Thickness(0, 7, 0, 7), Background = Brushes.Transparent, Cursor = Cursors.Hand };
             var addText = new TextBlock { Foreground = inkHint, FontSize = 13.5 };
             addText.Inlines.Add(new System.Windows.Documents.Run("+") { FontSize = 15 });
-            addText.Inlines.Add(new System.Windows.Documents.Run("   добавить пункт"));
+            addText.Inlines.Add(new System.Windows.Documents.Run(L.T("   добавить пункт", "   add item")));
             addRow.Child = addText;
             addRow.MouseEnter += (s, e) => addText.Foreground = inkSoft;
             addRow.MouseLeave += (s, e) => addText.Foreground = inkHint;
@@ -241,7 +241,7 @@ namespace Stickers
             textGrid = new Grid { Margin = new Thickness(0, 6, 0, 0), Background = Brushes.Transparent };
             textHint = new TextBlock
             {
-                Text = "Пиши здесь…", Foreground = inkHint, Margin = new Thickness(2, 0, 0, 0),
+                Text = L.T("Пиши здесь…", "Write here…"), Foreground = inkHint, Margin = new Thickness(2, 0, 0, 0),
                 IsHitTestVisible = false
             };
             textBox = new TextBox
@@ -415,7 +415,7 @@ namespace Stickers
             r.Tb.GotKeyboardFocus += (s, e) => r.Root.BringIntoView();
             g.Children.Add(cell);
 
-            r.Del = Theme.MakeIconButton(Theme.IcClose, "Удалить пункт", inkSoft, 9);
+            r.Del = Theme.MakeIconButton(Theme.IcClose, L.T("Удалить пункт", "Delete item"), inkSoft, 9);
             r.Del.Width = r.Del.Height = 20;
             r.Del.VerticalAlignment = VerticalAlignment.Top;
             r.Del.Opacity = 0;
@@ -445,8 +445,8 @@ namespace Stickers
         {
             eyeBtn.Content = Theme.Glyph(Note.Private ? Theme.IcHide : Theme.IcEye, 14);
             eyeBtn.ToolTip = Note.Private
-                ? "Содержимое скрыто — показать. Чтобы прочитать один пункт, задержи на нём мышку"
-                : "Скрыть содержимое (размыть пункты)";
+                ? L.T("Содержимое скрыто — показать. Чтобы прочитать один пункт, задержи на нём мышку", "Content hidden: click to show. To read one item, rest the mouse on it")
+                : L.T("Скрыть содержимое (размыть пункты)", "Hide content (blur the items)");
             eyeBtn.Foreground = Note.Private ? ink : inkSoft;
             eyeBtn.BeginAnimation(OpacityProperty, null);
             eyeBtn.Opacity = Note.Private || hover ? 1 : 0;
@@ -755,15 +755,15 @@ namespace Stickers
             menuPopup.Child = Theme.BuildMenu(new[]
             {
                 Note.IsList
-                    ? Theme.Item(Theme.IcNote, "Сделать обычной заметкой", () => run(ToggleMode))
-                    : Theme.Item(Theme.IcChecklist, "Сделать чеклистом", () => run(ToggleMode)),
+                    ? Theme.Item(Theme.IcNote, L.T("Сделать обычной заметкой", "Make it a plain note"), () => run(ToggleMode))
+                    : Theme.Item(Theme.IcChecklist, L.T("Сделать чеклистом", "Make it a checklist"), () => run(ToggleMode)),
                 Theme.Item(Note.Private ? Theme.IcEye : Theme.IcHide,
-                    Note.Private ? "Показать содержимое" : "Скрыть содержимое (блюр)", () => run(TogglePrivate)),
+                    Note.Private ? L.T("Показать содержимое", "Show content") : L.T("Скрыть содержимое (блюр)", "Hide content (blur)"), () => run(TogglePrivate)),
                 Theme.Item(Note.Collapsed ? Theme.IcDown : Theme.IcUp,
-                    Note.Collapsed ? "Развернуть" : "Свернуть до названия", () => run(() => SetCollapsed(!Note.Collapsed))),
-                Theme.Item(Theme.IcClose, "Закрыть  (Ctrl+W)", () => run(() => app.CloseNote(this))),
+                    Note.Collapsed ? L.T("Развернуть", "Expand") : L.T("Свернуть до названия", "Collapse to title"), () => run(() => SetCollapsed(!Note.Collapsed))),
+                Theme.Item(Theme.IcClose, L.T("Закрыть  (Ctrl+W)", "Close  (Ctrl+W)"), () => run(() => app.CloseNote(this))),
                 null,
-                Theme.Item(Theme.IcDelete, "Удалить в корзину", () => run(() => app.Delete(this)))
+                Theme.Item(Theme.IcDelete, L.T("Удалить в корзину", "Move to trash"), () => run(() => app.Delete(this)))
             });
             menuPopup.Closed += (s, e) => SetHover(card.IsMouseOver);
             menuPopup.IsOpen = true;
@@ -780,7 +780,7 @@ namespace Stickers
         void ApplyPin()
         {
             pinBtn.Content = Theme.Glyph(Note.Pinned ? Theme.IcPinned : Theme.IcPin, 13);
-            pinBtn.ToolTip = Note.Pinned ? "Закреплён поверх всех окон — открепить" : "Закрепить поверх всех окон";
+            pinBtn.ToolTip = Note.Pinned ? L.T("Закреплён поверх всех окон — открепить", "Pinned above all windows: unpin") : L.T("Закрепить поверх всех окон", "Pin above all windows");
             pinBtn.Foreground = Note.Pinned ? ink : inkSoft;
             pinBtn.BeginAnimation(OpacityProperty, null);
             pinBtn.Opacity = Note.Pinned || hover ? 1 : 0;

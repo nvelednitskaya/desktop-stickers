@@ -245,13 +245,13 @@ namespace Stickers
                 return wrap;
             };
 
-            stack.Children.Add(caption("Основные"));
+            stack.Children.Add(caption(L.T("Основные", "Main")));
             stack.Children.Add(row(Defaults));
-            stack.Children.Add(caption("Пастель"));
+            stack.Children.Add(caption(L.T("Пастель", "Pastel")));
             stack.Children.Add(row(Pastels));
             if (custom != null && custom.Count > 0)
             {
-                stack.Children.Add(caption("Мои цвета"));
+                stack.Children.Add(caption(L.T("Мои цвета", "My colors")));
                 stack.Children.Add(row(custom));
             }
 
@@ -261,7 +261,7 @@ namespace Stickers
                 Padding = new Thickness(8, 6, 8, 6),
                 Background = Brushes.Transparent,
                 Cursor = Cursors.Hand,
-                Child = new TextBlock { Text = "+  Свой цвет…", FontFamily = Font, FontSize = 13, Foreground = ink }
+                Child = new TextBlock { Text = L.T("+  Свой цвет…", "+  Custom color…"), FontFamily = Font, FontSize = 13, Foreground = ink }
             };
             more.MouseEnter += (s, e) => more.Background = new SolidColorBrush(Color.FromArgb(0x14, 0, 0, 0));
             more.MouseLeave += (s, e) => more.Background = Brushes.Transparent;

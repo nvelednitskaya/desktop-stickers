@@ -26,7 +26,7 @@ namespace Stickers
         public bool Exiting;
         internal StickerWindow OpenForTest(Note n) { return Open(n, false); }
 
-        string snapshotPath;
+        string snapshotPath, langOverride;
         bool customData, selfTest;
         Forms.NotifyIcon tray;
         Forms.ToolStripMenuItem hiddenMenu, trashMenu, autostartItem;
@@ -37,7 +37,7 @@ namespace Stickers
         [STAThread]
         public static void Main(string[] args)
         {
-            string data = null, snapshot = null;
+            string data = null, snapshot = null, lang = null;
             bool exit = false;
             for (int i = 0; i < args.Length; i++)
             {
@@ -45,6 +45,7 @@ namespace Stickers
                 else if (args[i] == "--snapshot" && i + 1 < args.Length) snapshot = args[++i];
                 else if (args[i] == "--exit") exit = true;
                 else if (args[i] == "--selftest") snapshot = "";
+                else if (args[i] == "--lang" && i + 1 < args.Length) lang = args[++i];
             }
             // Data lives in a "data" folder next to the exe, not in AppData: when the app is started by a
             // packaged (MSIX) app, Windows redirects AppData and registry writes into that package's private copy.
@@ -67,7 +68,8 @@ namespace Stickers
             {
                 snapshotPath = snapshot == "" ? null : snapshot,
                 selfTest = snapshot == "",
-                customData = data != null
+                customData = data != null,
+                langOverride = lang
             };
             app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             app.Run();
@@ -84,6 +86,7 @@ namespace Stickers
             Theme.LoadFonts(Store.Dir);
             Theme.InstallStyles(this);
             State = Store.Load();
+            L.Init(langOverride ?? State.Language);
 
             saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
             saveTimer.Tick += (s, ev) => SaveNow();
@@ -229,18 +232,18 @@ namespace Stickers
             Rect wa = SystemParameters.WorkArea;
             var n = new Note
             {
-                Title = "Привет! Это стикер",
+                Title = L.T("Привет! Это стикер", "Hi! This is a sticker"),
                 Color = "#EBE645",
                 W = 320,
                 H = 400,
                 Items = new List<NoteItem>
                 {
-                    new NoteItem { Text = "Тяни за верхнюю полоску — стикеры прилипают друг к другу" },
-                    new NoteItem { Text = "Enter — новый пункт, Ctrl+Enter — отметить" },
-                    new NoteItem { Text = "Наведи мышку — сверху появятся кнопки" },
-                    new NoteItem { Text = "Булавка — стикер поверх всех окон" },
-                    new NoteItem { Text = "Двойной клик по полоске — свернуть" },
-                    new NoteItem { Text = "Матрица Эйзенхауэра — в меню значка в трее" }
+                    new NoteItem { Text = L.T("Тяни за верхнюю полоску — стикеры прилипают друг к другу", "Drag the top bar: stickers snap to each other") },
+                    new NoteItem { Text = L.T("Enter — новый пункт, Ctrl+Enter — отметить", "Enter adds an item, Ctrl+Enter checks it") },
+                    new NoteItem { Text = L.T("Наведи мышку — сверху появятся кнопки", "Hover to see the buttons at the top") },
+                    new NoteItem { Text = L.T("Булавка — стикер поверх всех окон", "The pin keeps a sticker above all windows") },
+                    new NoteItem { Text = L.T("Двойной клик по полоске — свернуть", "Double-click the top bar to collapse") },
+                    new NoteItem { Text = L.T("Матрица Эйзенхауэра — в меню значка в трее", "Eisenhower matrix: in the tray icon menu") }
                 }
             };
             n.X = wa.Right - n.W - 40;
@@ -280,7 +283,7 @@ namespace Stickers
         void CreateMatrix()
         {
             CreateGrid(2, 2,
-                new[] { "Срочно и важно", "Важно, не срочно", "Срочно, не важно", "Не срочно и не важно" },
+                new[] { L.T("Срочно и важно", "Urgent & important"), L.T("Важно, не срочно", "Important, not urgent"), L.T("Срочно, не важно", "Urgent, not important"), L.T("Не срочно и не важно", "Not urgent, not important") },
                 new[] { "#F0954F", "#BCD979", "#EBE645", "#C3DFE0" },
                 320, 270, null);
         }
@@ -290,10 +293,10 @@ namespace Stickers
             CreateGrid(3, 4,
                 new[]
                 {
-                    "Позвонить", "Написать письмо", "Написать в мессенджер",
-                    "Сделать сегодня", "Встречи", "Напомнить / проверить",
-                    "Сделать скоро", "Запланировать", "Изучить",
-                    "Победы дня", "Купить", "Мысли"
+                    L.T("Позвонить", "To call"), L.T("Написать письмо", "To email"), L.T("Написать в мессенджер", "To text"),
+                    L.T("Сделать сегодня", "To do today"), L.T("Встречи", "Appointments"), L.T("Напомнить / проверить", "To follow up"),
+                    L.T("Сделать скоро", "To do soon"), L.T("Запланировать", "To schedule"), L.T("Изучить", "To research"),
+                    L.T("Победы дня", "Today's wins"), L.T("Купить", "To buy"), L.T("Мысли", "Thoughts")
                 },
                 new[]
                 {
@@ -302,7 +305,7 @@ namespace Stickers
                     "#F8DEC4", "#EFE3C6", "#CFECDF",
                     "#F6CABF", "#F6D5CC", "#F3C9A6"
                 },
-                250, 215, new[] { "Мысли" });
+                250, 215, new[] { L.T("Мысли", "Thoughts") });
         }
 
         // ================= tray =================
@@ -311,17 +314,17 @@ namespace Stickers
         {
             var menu = new Forms.ContextMenuStrip { Font = new System.Drawing.Font("Segoe UI", 9.5f), ShowImageMargin = false };
             menu.ShowCheckMargin = true;
-            menu.Items.Add("Новый стикер", null, (s, e) => NewNote(null));
-            menu.Items.Add("Матрица Эйзенхауэра (4 стикера)", null, (s, e) => CreateMatrix());
-            menu.Items.Add("Brain dump (12 стикеров)", null, (s, e) => CreateBrainDump());
+            menu.Items.Add(L.T("Новый стикер", "New sticker"), null, (s, e) => NewNote(null));
+            menu.Items.Add(L.T("Матрица Эйзенхауэра (4 стикера)", "Eisenhower matrix (4 stickers)"), null, (s, e) => CreateMatrix());
+            menu.Items.Add(L.T("Brain dump (12 стикеров)", "Brain dump (12 stickers)"), null, (s, e) => CreateBrainDump());
             menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add("Показать все стикеры", null, (s, e) => BringAll());
-            hiddenMenu = new Forms.ToolStripMenuItem("Закрытые стикеры");
+            menu.Items.Add(L.T("Показать все стикеры", "Show all stickers"), null, (s, e) => BringAll());
+            hiddenMenu = new Forms.ToolStripMenuItem(L.T("Закрытые стикеры", "Closed stickers"));
             menu.Items.Add(hiddenMenu);
-            trashMenu = new Forms.ToolStripMenuItem("Корзина");
+            trashMenu = new Forms.ToolStripMenuItem(L.T("Корзина", "Trash"));
             menu.Items.Add(trashMenu);
             menu.Items.Add(new Forms.ToolStripSeparator());
-            autostartItem = new Forms.ToolStripMenuItem("Запускать вместе с Windows");
+            autostartItem = new Forms.ToolStripMenuItem(L.T("Запускать вместе с Windows", "Start with Windows"));
             autostartItem.Click += (s, e) =>
             {
                 State.Autostart = !State.Autostart;
@@ -329,19 +332,43 @@ namespace Stickers
                 ScheduleSave();
             };
             menu.Items.Add(autostartItem);
-            menu.Items.Add("Открыть папку с данными", null, (s, e) => Process.Start("explorer.exe", "\"" + Store.Dir + "\""));
+            menu.Items.Add(L.T("Открыть папку с данными", "Open data folder"), null, (s, e) => Process.Start("explorer.exe", "\"" + Store.Dir + "\""));
+            var langMenu = new Forms.ToolStripMenuItem("Язык / Language");
+            langMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(L.T("Как в Windows", "Same as Windows"), null,
+                (s, e) => SetLanguage(null)) { Checked = State.Language == null });
+            langMenu.DropDownItems.Add(new Forms.ToolStripMenuItem("Русский", null,
+                (s, e) => SetLanguage("ru")) { Checked = State.Language == "ru" });
+            langMenu.DropDownItems.Add(new Forms.ToolStripMenuItem("English", null,
+                (s, e) => SetLanguage("en")) { Checked = State.Language == "en" });
+            menu.Items.Add(langMenu);
             menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add("Выход", null, (s, e) => ExitApp());
+            menu.Items.Add(L.T("Выход", "Exit"), null, (s, e) => ExitApp());
             menu.Opening += (s, e) => RefreshMenu();
 
             tray = new Forms.NotifyIcon
             {
                 Icon = LoadTrayIcon(),
-                Text = "Стикеры — клик: показать все",
+                Text = L.T("Стикеры — клик: показать все", "Stickers: click to show all"),
                 ContextMenuStrip = menu,
                 Visible = true
             };
             tray.MouseClick += (s, e) => { if (e.Button == Forms.MouseButtons.Left) BringAll(); };
+        }
+
+        // Switching the language rebuilds the sticker windows and the tray menu; the notes themselves do not change.
+        void SetLanguage(string lang)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                State.Language = lang;
+                L.Init(lang);
+                ScheduleSave();
+                foreach (var w in Stickers.ToList()) w.ForceClose();
+                Stickers.Clear();
+                foreach (var n in State.Notes.Where(x => !x.Hidden)) Open(n, false);
+                if (tray != null) { tray.Visible = false; tray.Dispose(); }
+                SetupTray();
+            }));
         }
 
         void RefreshMenu()
@@ -349,40 +376,40 @@ namespace Stickers
             autostartItem.Checked = State.Autostart;
 
             var hidden = State.Notes.Where(n => n.Hidden).ToList();
-            hiddenMenu.Text = hidden.Count == 0 ? "Закрытые стикеры" : "Закрытые стикеры (" + hidden.Count + ")";
+            hiddenMenu.Text = hidden.Count == 0 ? L.T("Закрытые стикеры", "Closed stickers") : L.T("Закрытые стикеры (", "Closed stickers (") + hidden.Count + ")";
             hiddenMenu.DropDownItems.Clear();
             if (hidden.Count == 0)
-                hiddenMenu.DropDownItems.Add(new Forms.ToolStripMenuItem("Нет закрытых") { Enabled = false });
+                hiddenMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(L.T("Нет закрытых", "No closed stickers")) { Enabled = false });
             foreach (var n in hidden)
             {
                 var note = n;
-                hiddenMenu.DropDownItems.Add("Открыть: " + MenuTitle(n), null, (s, e) => Reopen(note));
+                hiddenMenu.DropDownItems.Add(L.T("Открыть: ", "Open: ") + MenuTitle(n), null, (s, e) => Reopen(note));
             }
             if (hidden.Count > 1)
             {
                 hiddenMenu.DropDownItems.Add(new Forms.ToolStripSeparator());
-                hiddenMenu.DropDownItems.Add("Открыть все", null, (s, e) => { foreach (var n in hidden) Reopen(n); });
+                hiddenMenu.DropDownItems.Add(L.T("Открыть все", "Open all"), null, (s, e) => { foreach (var n in hidden) Reopen(n); });
             }
 
             trashMenu.DropDownItems.Clear();
             if (State.Trash.Count == 0)
             {
-                trashMenu.DropDownItems.Add(new Forms.ToolStripMenuItem("Пусто") { Enabled = false });
+                trashMenu.DropDownItems.Add(new Forms.ToolStripMenuItem(L.T("Пусто", "Empty")) { Enabled = false });
                 return;
             }
             foreach (var n in State.Trash.ToList())
             {
                 var note = n;
-                trashMenu.DropDownItems.Add("Вернуть: " + MenuTitle(n) + "   · " + n.DeletedAt, null, (s, e) => Restore(note));
+                trashMenu.DropDownItems.Add(L.T("Вернуть: ", "Restore: ") + MenuTitle(n) + "   · " + n.DeletedAt, null, (s, e) => Restore(note));
             }
             trashMenu.DropDownItems.Add(new Forms.ToolStripSeparator());
-            trashMenu.DropDownItems.Add("Очистить корзину", null, (s, e) => { State.Trash.Clear(); ScheduleSave(); });
+            trashMenu.DropDownItems.Add(L.T("Очистить корзину", "Empty trash"), null, (s, e) => { State.Trash.Clear(); ScheduleSave(); });
         }
 
         // For private notes the menu shows only the title, never the item text.
         static string MenuTitle(Note n)
         {
-            string title = !string.IsNullOrWhiteSpace(n.Title) ? n.Title : n.Private ? "личное, без названия" : FirstLine(n);
+            string title = !string.IsNullOrWhiteSpace(n.Title) ? n.Title : n.Private ? L.T("личное, без названия", "personal, untitled") : FirstLine(n);
             title = title.Trim();
             return title.Length > 40 ? title.Substring(0, 40) + "…" : title;
         }
@@ -390,7 +417,7 @@ namespace Stickers
         static string FirstLine(Note n)
         {
             string s = n.IsList ? n.Items.Select(i => i.Text).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t)) : n.Text;
-            s = (s ?? "без названия").Trim();
+            s = (s ?? L.T("без названия", "untitled")).Trim();
             int nl = s.IndexOf('\n');
             return nl > 0 ? s.Substring(0, nl).Trim() : s;
         }
@@ -515,29 +542,29 @@ namespace Stickers
                 return n;
             };
             double g = Snap.Gap;
-            var a = mk("Срочно и важно", "#F0954F", 0, 0, 300, 250);
+            var a = mk(L.T("Срочно и важно", "Urgent & important"), "#F0954F", 0, 0, 300, 250);
             a.Items.AddRange(new[] {
-                new NoteItem { Text = "Отправить договор партнёрам" },
-                new NoteItem { Text = "Созвон с командой в 15:00", Done = true, DoneAt = "13.10.2026" },
-                new NoteItem { Text = "Счёт за хостинг — оплатить до пятницы, иначе отключат" } });
+                new NoteItem { Text = L.T("Отправить договор партнёрам", "Send the contract to partners") },
+                new NoteItem { Text = L.T("Созвон с командой в 15:00", "Team call at 3 pm"), Done = true, DoneAt = "13.10.2026" },
+                new NoteItem { Text = L.T("Счёт за хостинг — оплатить до пятницы, иначе отключат", "Pay the hosting bill by Friday or the site goes down") } });
             a.Pinned = true;
-            var b = mk("Важно, не срочно", "#BCD979", 300 + g, 0, 300, 250);
-            b.Items.AddRange(new[] { new NoteItem { Text = "План на квартал" }, new NoteItem { Text = "Спорт 3 раза в неделю" } });
-            var c = mk("Срочно, не важно", "#EBE645", 0, 250 + g, 300, 250);
-            c.Items.Add(new NoteItem { Text = "Ответить в чатах" });
-            mk("Не срочно и не важно", "#C3DFE0", 300 + g, 250 + g, 300, 250);
-            var t = mk("Мысли", "#F6CABF", 640, 0, 260, 200);
+            var b = mk(L.T("Важно, не срочно", "Important, not urgent"), "#BCD979", 300 + g, 0, 300, 250);
+            b.Items.AddRange(new[] { new NoteItem { Text = L.T("План на квартал", "Quarterly plan") }, new NoteItem { Text = L.T("Спорт 3 раза в неделю", "Workout 3 times a week") } });
+            var c = mk(L.T("Срочно, не важно", "Urgent, not important"), "#EBE645", 0, 250 + g, 300, 250);
+            c.Items.Add(new NoteItem { Text = L.T("Ответить в чатах", "Reply in the chats") });
+            mk(L.T("Не срочно и не важно", "Not urgent, not important"), "#C3DFE0", 300 + g, 250 + g, 300, 250);
+            var t = mk(L.T("Мысли", "Thoughts"), "#F6CABF", 640, 0, 260, 200);
             t.Mode = "text";
-            t.Text = "Сделать лендинг светлее.\nСпросить про бюджет на ноябрь.";
+            t.Text = L.T("Сделать лендинг светлее.\nСпросить про бюджет на ноябрь.", "Make the landing page lighter.\nAsk about the November budget.");
             var d = mk("", "#3A3835", 640, 200 + g, 260, 180);
-            d.Items.Add(new NoteItem { Text = "Тёмный стикер" });
-            d.Items.Add(new NoteItem { Text = "с отметкой", Done = true, DoneAt = "14.10.2026" });
-            var col = mk("Свёрнутый стикер", "#DCDAF6", 640, 390 + 2 * g, 260, 200);
+            d.Items.Add(new NoteItem { Text = L.T("Тёмный стикер", "Dark sticker") });
+            d.Items.Add(new NoteItem { Text = L.T("с отметкой", "with a checkmark"), Done = true, DoneAt = "14.10.2026" });
+            var col = mk(L.T("Свёрнутый стикер", "Collapsed sticker"), "#DCDAF6", 640, 390 + 2 * g, 260, 200);
             col.Collapsed = true;
-            var priv = mk("Личное", "#C3DFE0", 930, 330, 260, 220);
+            var priv = mk(L.T("Личное", "Personal"), "#C3DFE0", 930, 330, 260, 220);
             priv.Private = true;
-            priv.Items.Add(new NoteItem { Text = "Записаться к врачу на четверг" });
-            priv.Items.Add(new NoteItem { Text = "Подарок маме", Done = true });
+            priv.Items.Add(new NoteItem { Text = L.T("Записаться к врачу на четверг", "Book a doctor for Thursday") });
+            priv.Items.Add(new NoteItem { Text = L.T("Подарок маме", "Gift for mom"), Done = true });
 
             const double off = -30000;
             var wins = notes.Select(n =>
@@ -554,12 +581,12 @@ namespace Stickers
             var menuPanel = new System.Windows.Controls.Grid();
             menuPanel.Children.Add(Theme.BuildMenu(new[]
             {
-                Theme.Item(Theme.IcNote, "Сделать обычной заметкой", () => { }),
-                Theme.Item(Theme.IcHide, "Скрыть содержимое (блюр)", () => { }),
-                Theme.Item(Theme.IcUp, "Свернуть до названия", () => { }),
-                Theme.Item(Theme.IcClose, "Закрыть  (Ctrl+W)", () => { }),
+                Theme.Item(Theme.IcNote, L.T("Сделать обычной заметкой", "Make it a plain note"), () => { }),
+                Theme.Item(Theme.IcHide, L.T("Скрыть содержимое (блюр)", "Hide content (blur)"), () => { }),
+                Theme.Item(Theme.IcUp, L.T("Свернуть до названия", "Collapse to title"), () => { }),
+                Theme.Item(Theme.IcClose, L.T("Закрыть  (Ctrl+W)", "Close  (Ctrl+W)"), () => { }),
                 null,
-                Theme.Item(Theme.IcDelete, "Удалить в корзину", () => { })
+                Theme.Item(Theme.IcDelete, L.T("Удалить в корзину", "Move to trash"), () => { })
             }));
 
             Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>

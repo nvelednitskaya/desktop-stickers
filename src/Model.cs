@@ -77,6 +77,7 @@ namespace Stickers
         public int Version { get; set; }
         public bool FirstRunDone { get; set; }
         public bool Autostart { get; set; }
+        public string Language { get; set; }   // null = follow Windows, "ru" or "en"
         public List<string> CustomColors { get; set; }
         public List<Note> Notes { get; set; }
         public List<Note> Trash { get; set; }
